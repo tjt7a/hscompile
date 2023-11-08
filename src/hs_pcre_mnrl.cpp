@@ -224,9 +224,9 @@ namespace ue2 {
                         mnrl_id << expr.id << "_" << dst_idx;
                         
                         // get the node
-                        shared_ptr<MNRLNode> n = mnrl.getNodeById(mnrl_id.str());
+                        MNRLNode &n = mnrl.getNodeById(mnrl_id.str());
                         
-                        upgrade_start(*n, convert_enable(src_idx));
+                        upgrade_start(n, convert_enable(src_idx));
                         
                         // let's save this id in case we need to deal
                         // with a start-->report edge
@@ -272,20 +272,20 @@ namespace ue2 {
                             mnrl_id << expr.id << "_" << src_idx;
                             
                             // get the node
-                            shared_ptr<MNRLNode> n = mnrl.getNodeById(mnrl_id.str());
+                            MNRLNode &n = mnrl.getNodeById(mnrl_id.str());
                             
                             // deal with EOD
-                            if(dst_idx == NODE_ACCEPT_EOD && !n->getReport()) {
+                            if(dst_idx == NODE_ACCEPT_EOD && !n.getReport()) {
                               // EOD doesn't have to do with enable type
                               // KAA changing to be the report enable
                               // upgrade_start(*n, convert_enable(src_idx));
-                              n->setReportEnable(MNRLDefs::ReportEnableType::ENABLE_ON_LAST);
+                              n.setReportEnable(MNRLDefs::ReportEnableType::ENABLE_ON_LAST);
                             } else if (dst_idx == NODE_ACCEPT) {
                               // we need to loosen the report
-                              n->setReportEnable(MNRLDefs::ReportEnableType::ENABLE_ALWAYS);
+                              n.setReportEnable(MNRLDefs::ReportEnableType::ENABLE_ALWAYS);
                             }
                             
-                            n->setReport(true);
+                            n.setReport(true);
                             
                             // that's all we need to do with this edge
                             continue;
@@ -314,8 +314,8 @@ namespace ue2 {
         if(start_to_report) {
             // go through and set all starts to report
             for(const auto id : start_nodes) {
-                shared_ptr<MNRLNode> n = mnrl.getNodeById(id);
-                n->setReport(true);
+                MNRLNode &n = mnrl.getNodeById(id);
+                n.setReport(true);
             }
         }
     }
