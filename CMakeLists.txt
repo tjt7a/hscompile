@@ -68,7 +68,7 @@ set(hsrun_SRC
     include/ht.h
     include/read_input.h
     include/uthash.h
-    src/hsrun.c
+    src/hsrun.cpp
 )
 
 set(pcre2mnrl_SRC

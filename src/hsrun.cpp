@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <omp.h>
+#include <chrono>
+#include <iostream>
 #include "hs.h"
 #include "hs_compile_mnrl.h"
 #include "ht.h"
@@ -126,7 +128,9 @@ int main(int argc, char *argv[]) {
     char *inputs_to_delete[num_inputs];
     r_map *rmaps_to_delete[num_dbs];
     unsigned int *supports_to_delete[num_dbs];
-    
+   
+
+    unsigned long DATA_SIZE = 0; 
     //loop through the inputs to get input data
     for ( int j=0; j < num_inputs; j++ ) {
         char *inputFN = input_fns[j];
@@ -143,7 +147,7 @@ int main(int argc, char *argv[]) {
             }
             return 4;
         }
-        
+        DATA_SIZE += length;
         inputs_to_delete[j] = inputData;
         inputs_length[j] = length;
     }
@@ -351,6 +355,10 @@ int main(int argc, char *argv[]) {
         omp_set_dynamic(1);
         omp_set_num_threads(num_threads);
     }
+
+    // Start the timer before sending data to the FPGA
+    std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
+
     //#pragma omp parallel for
     for ( int i=0; i<num_inputs*num_dbs; i++ ) {
         run_ctx ctx = contexts[i];
@@ -377,6 +385,13 @@ int main(int argc, char *argv[]) {
         }
         
     }
+
+    std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+    double duration = std::chrono::duration<double, std::milli>(end_time - start_time).count();
+    std::cout << "Running automata on " << DATA_SIZE << " bytes of input data" << std::endl;
+    std::cout << "Automata Processing Time: " << duration << " ms" << std::endl;
+    std::cout << "Throughput: " << (DATA_SIZE/1000)/(duration) << " MB/s" << std::endl;
+
     // print out supports
     if(support) {
         printf("File, ID, Report ID, Count\n");
