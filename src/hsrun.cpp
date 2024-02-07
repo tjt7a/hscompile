@@ -403,7 +403,7 @@ int main(int argc, char *argv[]) {
         
     }
 
-    std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+    end_time = std::chrono::high_resolution_clock::now();
     double duration = std::chrono::duration<double, std::milli>(end_time - start_time).count();
     std::cout << "Running automata on " << DATA_SIZE << " bytes of input data" << std::endl;
     std::cout << "Automata Processing Time: " << duration << " ms" << std::endl;
