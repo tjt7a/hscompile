@@ -6,9 +6,9 @@ project(hscompile C CXX)
 set(BOOST_MINVERSION 1.57.0)
 
 find_package(Boost ${BOOST_MINVERSION} QUIET COMPONENTS regex)
-if(NOT Boost_FOUND)
-    message(FATAL_ERROR "Boost ${BOOST_MINVERSION} or later not found. Either install system packages if available or set the CMake BOOST_ROOT variable.")
-endif()
+#if(NOT Boost_FOUND)
+#    message(FATAL_ERROR "Boost ${BOOST_MINVERSION} or later not found. Either install system packages if available or set the CMake BOOST_ROOT variable.")
+#endif()
 
 message(STATUS "Boost version: ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 
@@ -68,7 +68,7 @@ set(hsrun_SRC
     include/ht.h
     include/read_input.h
     include/uthash.h
-    src/hsrun.c
+    src/hsrun.cpp
 )
 
 set(pcre2mnrl_SRC
@@ -86,7 +86,7 @@ add_executable(pcre2mnrl ${pcre2mnrl_SRC})
 # we always want to link with CXX
 set_target_properties(hscompile hsrun pcre2mnrl
     PROPERTIES LINKER_LANGUAGE CXX
-    C_STANDARD 99
+    C_STANDARD 11 
 )
 
 target_compile_features(hscompile PRIVATE cxx_range_for)

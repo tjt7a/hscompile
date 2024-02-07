@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <stdio.h>
+#include <iostream>
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
@@ -8,6 +9,7 @@
 #include "hs_compile_mnrl.h"
 #include "ht.h"
 #include "read_input.h"
+#include <chrono>
 
 typedef struct run_ctx_t {
     r_map *report_map;
@@ -29,14 +31,14 @@ typedef struct run_ctx_t {
 static int eventHandler(unsigned int id, unsigned long long from,
                         unsigned long long to, unsigned int flags, void *ctx) {
     
-    r_map *report_map = (r_map *) ctx;
+  //  r_map *report_map = (r_map *) ctx;
     
-    r_map *m = find_mapping(id, &report_map);
-    if(m == NULL) {
-        printf("couldn't find mapping: %u\n", id);
-        return 1;
-    }    
-    printf("Match at id::code::offset %s::%s::%llu\n", m->name, m->report, to);
+  //  r_map *m = find_mapping(id, &report_map);
+  //  if(m == NULL) {
+  //      printf("couldn't find mapping: %u\n", id);
+  //      return 1;
+  //  }    
+//	printf("Match at id::code::offset %s::%s::%llu\n", m->name, m->report, to);
     return 0;
 }
 
@@ -118,7 +120,7 @@ int main(int argc, char *argv[]) {
     }
     
     run_ctx contexts[num_dbs*num_inputs];
-    
+    printf("Number of inputs: %d\n", num_inputs); 
     size_t inputs_length[num_inputs];
     
     // for cleanup
@@ -143,11 +145,16 @@ int main(int argc, char *argv[]) {
             }
             return 4;
         }
+	else {
+		printf("Successfully read in input data\n");
+	}
         
         inputs_to_delete[j] = inputData;
         inputs_length[j] = length;
     }
-    
+   
+    printf("Number of databases: %d\n", num_dbs);
+
     // loop through the dbs
     for ( int i=0; i < num_dbs; i++ ) {
         
@@ -213,6 +220,9 @@ int main(int argc, char *argv[]) {
             
             return 3;
         }
+	else {
+		printf("Successfully deserialized database\n");
+	}
         
         // keep track of the database
         dbs_to_delete[i] = database;
@@ -224,7 +234,7 @@ int main(int argc, char *argv[]) {
             supports_to_delete[i] = NULL;
         }
         
-        //printf("Allocating scratch...\n");
+        printf("Allocating scratch...\n");
         hs_scratch_t *db_scratch = NULL;
         if (hs_alloc_scratch(database, &db_scratch) != HS_SUCCESS) {
             fprintf(stderr, "ERROR: Unable to allocate scratch space for database '%s'. Exiting.\n", hsDB);
@@ -261,6 +271,9 @@ int main(int argc, char *argv[]) {
             
             return 5;
         }
+	else {
+		printf("Successfully allocated scratch\n");
+	}
         
         
         //loop through the inputs
@@ -344,13 +357,20 @@ int main(int argc, char *argv[]) {
         hs_free_scratch(db_scratch);
     } // database loop
  
-    //printf("Simulating graph on input data with Hyperscan...\n");
+    printf("Simulating graph on input data with Hyperscan...\n");
     
     //okay do the scanning
     if(num_threads > 0) {
         omp_set_dynamic(1);
         omp_set_num_threads(num_threads);
     }
+
+	double cpu_time_used;
+	std::chrono::high_resolution_clock::time_point start_time, end_time;
+	
+	// Grab start time here
+	start_time = std::chrono::high_resolution_clock::now();
+
     #pragma omp parallel for
     for ( int i=0; i<num_inputs*num_dbs; i++ ) {
         run_ctx ctx = contexts[i];
@@ -377,6 +397,16 @@ int main(int argc, char *argv[]) {
         }
         
     }
+
+	
+	// Grab end time here
+	end_time = std::chrono::high_resolution_clock::now();
+
+	cpu_time_used = std::chrono::duration<double, std::micro>(end_time - start_time).count();//((double) (end - start)) / CLOCKS_PER_SEC;
+printf("Simulation Time: %f ms\n", cpu_time_used/1000);
+	printf("Datasize: %d\n", contexts[0].length);
+	printf("Throughout: %f B/sec\n", contexts[0].length / cpu_time_used);
+	std::cout << cpu_time_used << std::endl;
     // print out supports
     if(support) {
         printf("File, ID, Report ID, Count\n");
