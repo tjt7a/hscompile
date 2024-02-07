@@ -103,9 +103,9 @@ namespace ue2 {
     
             // MNRL read in file name
             // wrap with try/catch later maybe?
-            shared_ptr<MNRLNetwork> mnrl_graph = loadMNRL(graphFN);
+            MNRLNetwork mnrl_graph = loadMNRL(graphFN);
     
-            map<string, shared_ptr<MNRLNode>> mnrl_nodes = mnrl_graph->getNodes();
+            map<string, MNRLNode*> mnrl_nodes = mnrl_graph.getNodes();
             
             // keep track of report id's
             // FIXME need to decide about merging
@@ -120,8 +120,8 @@ namespace ue2 {
                     exit(1);
                 }
                 // can do a cast to a MNRLHState
-                shared_ptr<MNRLNode> node_tmp = n.second;
-                shared_ptr<MNRLHState> node = dynamic_pointer_cast<MNRLHState>(node_tmp);
+                MNRLNode *node_tmp = n.second;
+                MNRLHState &node = dynamic_cast<MNRLHState&>(*node_tmp);
     
                 // generate vertex
                 NFAVertex tmp = add_vertex(graph);
@@ -131,10 +131,10 @@ namespace ue2 {
                 graph[tmp].char_reach = CharReach();
                 graph[tmp].char_reach.clear();
                 
-                parseSymbolSet(graph[tmp].char_reach, node->getSymbolSet());
+                parseSymbolSet(graph[tmp].char_reach, node.getSymbolSet());
     
                 // handle starts
-                MNRLDefs::EnableType start_type = node->getEnable();
+                MNRLDefs::EnableType start_type = node.getEnable();
                 switch(start_type) {
                 case MNRLDefs::EnableType::ENABLE_ALWAYS :
                     add_edge(graph.startDs, tmp, graph);
@@ -149,13 +149,13 @@ namespace ue2 {
                 };
     
                 // report
-                if(node->getReport()) {
+                if(node.getReport()) {
                     add_edge(tmp, graph.accept, graph);
                     
                     // figure out if this has a report code or not
-                    shared_ptr<MNRLReportId> rid = node->getReportId();
+                    MNRLReportId *rid = node.getReportId();
                     string mnrl_rid = rid->toString();
-                    string mnrl_id = node->getId();
+                    string mnrl_id = node.getId();
                     
                     unsigned int hs_report_id;
                     map<string, unsigned int>::iterator it;
@@ -208,18 +208,20 @@ namespace ue2 {
             for(auto n : mnrl_nodes){
     
                 string node_id = n.first;
-                shared_ptr<MNRLNode> node = n.second;
+                MNRLNode *node = n.second;
     
                 // get hs_vertex
                 NFAVertex hs_vertex = vertices[node_id];
     
-                for(auto to : *(node->getOutputConnections())){
+                for(auto to : node->getOutputConnections()){
                     //ask port pointer to get connections
-                    shared_ptr<MNRLPort> out_port = to.second;
+                    MNRLPort &out_port = to.second;
                     //for each connection in the port
-                    for(auto sink : out_port->getConnections()) {
-                        shared_ptr<MNRLNode> sinkNode = sink.first;
-                        add_edge(vertices[node_id], vertices[sinkNode->getId()], graph);
+                    for(auto sink : out_port.getConnections()) {
+                        //MNRLNode sinkNode = sink.first;
+                        //add_edge(vertices[node_id], vertices[sinkNode.getId()], graph);
+			string sinkNode = sink.first;
+			add_edge(vertices[node_id], vertices[sinkNode], graph);
                     }
                 }
     

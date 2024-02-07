@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <omp.h>
+#include <chrono>
+#include <iostream>
 #include "hs.h"
 #include "hs_compile_mnrl.h"
 #include "ht.h"
@@ -47,7 +49,7 @@ static int supportEventHandler(unsigned int id, unsigned long long from,
     
     unsigned int *support = (unsigned int *) ctx;
     
-    #pragma omp atomic
+    //#pragma omp atomic
     support[id]++;
     
     return 0;
@@ -128,7 +130,9 @@ int main(int argc, char *argv[]) {
     char *inputs_to_delete[num_inputs];
     r_map *rmaps_to_delete[num_dbs];
     unsigned int *supports_to_delete[num_dbs];
-    
+   
+
+    unsigned long DATA_SIZE = 0; 
     //loop through the inputs to get input data
     for ( int j=0; j < num_inputs; j++ ) {
         char *inputFN = input_fns[j];
@@ -149,6 +153,7 @@ int main(int argc, char *argv[]) {
 		printf("Successfully read in input data\n");
 	}
         
+        DATA_SIZE += length;
         inputs_to_delete[j] = inputData;
         inputs_length[j] = length;
     }
@@ -398,15 +403,12 @@ int main(int argc, char *argv[]) {
         
     }
 
-	
-	// Grab end time here
-	end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+    double duration = std::chrono::duration<double, std::milli>(end_time - start_time).count();
+    std::cout << "Running automata on " << DATA_SIZE << " bytes of input data" << std::endl;
+    std::cout << "Automata Processing Time: " << duration << " ms" << std::endl;
+    std::cout << "Throughput: " << (DATA_SIZE/1000)/(duration) << " MB/s" << std::endl;
 
-	cpu_time_used = std::chrono::duration<double, std::micro>(end_time - start_time).count();//((double) (end - start)) / CLOCKS_PER_SEC;
-printf("Simulation Time: %f ms\n", cpu_time_used/1000);
-	printf("Datasize: %d\n", contexts[0].length);
-	printf("Throughout: %f B/sec\n", contexts[0].length / cpu_time_used);
-	std::cout << cpu_time_used << std::endl;
     // print out supports
     if(support) {
         printf("File, ID, Report ID, Count\n");
