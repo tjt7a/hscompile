@@ -21,9 +21,10 @@ git clone --recurse-submodules https://github.com/tjt7a/hscompile.git
 
 ```bash
 cd lib/hyperscan
+checkout master
 mkdir build
 cd build
-cmake ..
+cmake .. -DFAT_RUNTIME=off
 make
 ```
 
