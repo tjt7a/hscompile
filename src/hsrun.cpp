@@ -33,14 +33,14 @@ typedef struct run_ctx_t {
 static int eventHandler(unsigned int id, unsigned long long from,
                         unsigned long long to, unsigned int flags, void *ctx) {
     
-  //  r_map *report_map = (r_map *) ctx;
+    r_map *report_map = (r_map *) ctx;
     
-  //  r_map *m = find_mapping(id, &report_map);
-  //  if(m == NULL) {
-  //      printf("couldn't find mapping: %u\n", id);
-  //      return 1;
-  //  }    
-//	printf("Match at id::code::offset %s::%s::%llu\n", m->name, m->report, to);
+    r_map *m = find_mapping(id, &report_map);
+    if(m == NULL) {
+        printf("couldn't find mapping: %u\n", id);
+        return 1;
+    }    
+	printf("Match at id::code::offset %s::%s::%llu\n", m->name, m->report, to);
     return 0;
 }
 
