@@ -20,8 +20,7 @@ git clone --recurse-submodules https://github.com/tjt7a/hscompile.git
 ```
 
 ```bash
-cd lib/hyperscan
-checkout master
+cd lib/hyperscan_for_hscompile
 mkdir build
 cd build
 cmake .. -DFAT_RUNTIME=off
@@ -42,6 +41,7 @@ cd hscompile
 mkdir build
 cd build
 
-cmake -DHS_SOURCE_DIR=../lib/hyperscan -DMNRL_SOURCE_DIR=../lib/mnrl/C++ ..
+cmake -DHS_SOURCE_DIR=../lib/hyperscan_for_hscompile -DMNRL_SOURCE_DIR=../lib/mnrl/C++ ..
+
 make
 ```
