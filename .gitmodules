@@ -1,3 +1,6 @@
 [submodule "lib/mnrl"]
 	path = lib/mnrl
 	url = https://github.com/kevinaangstadt/mnrl
+[submodule "hyperscan_for_hscompile"]
+	path = lib/hyperscan_for_hscompile
+	url = git@github.com:tjt7a/hyperscan_for_hscompile.git
